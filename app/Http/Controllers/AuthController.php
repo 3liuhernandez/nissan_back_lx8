@@ -9,36 +9,38 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller {
     public function __construct() {
+
         $this->middleware(
-            'auth:api', ['except' => ['login']]
+            'auth:api', ['except' => ['login', 'register']]
         );
     }
 
     public function login( Request $request ) {
+
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'pass' => 'required|string|min:4'
+            'password' => 'required|string|min:4'
         ]);
 
-        if ( !$validator->fails() ) {
+        if ( $validator->fails() ) {
             return response()->json($validator->errors(), 400);
         }
 
-        $token_validity = 24 * 60;
+        $token_validity = ( 24 * 60 );
         $this->guard()->factory()->setTTL( $token_validity );
 
         if( !$token = $this->guard()->attempt( $validator->validated() ) ) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Unauthorized!'], 401);
         }
 
-        return $this->responseWithToken( $token );
+        return $this->respondWithToken( $token );
     }
 
     public function register( Request $request ) {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'email' => 'required|email|unique:users',
-            'pass' => 'required|confirmed|min:4'
+            'password' => 'required|confirmed|min:4'
         ]);
 
         if ( !$validator->fails() ) {
@@ -49,7 +51,7 @@ class AuthController extends Controller {
 
         $user = User::create(array_merge(
             $validator->validated(),
-            ['pass' => bcrypt($request->pass)]
+            ['password' => bcrypt($request->password)]
         ));
 
         return response()->json([
@@ -71,10 +73,10 @@ class AuthController extends Controller {
     }
 
     public function refresh() {
-
+        return $this->respondWithToken($this->guard()->refresh());
     }
 
-    protected function responseWithToken( $token ) {
+    protected function respondWithToken( $token ) {
         return response()->json([
             'token' => $token,
             'token_type' => 'bearer',
