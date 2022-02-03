@@ -15,6 +15,11 @@ class AuthController extends Controller {
         );
     }
 
+    /**
+     * Logear usuario
+     * @param request credenciales del usuario
+     * @return object token y datos del usuario
+     */
     public function login( Request $request ) {
 
         $validator = Validator::make($request->all(), [
@@ -29,11 +34,16 @@ class AuthController extends Controller {
         $token_validity = ( 24 * 60 );
         $this->guard()->factory()->setTTL( $token_validity );
 
-        if( !$token = $this->guard()->attempt( $validator->validated() ) ) {
+        $token = $this->guard()->attempt( $validator->validated() );
+
+        if( !$token ) {
             return response()->json(['error' => 'Unauthorized!'], 401);
         }
 
-        return $this->respondWithToken( $token );
+        return response()->json([
+            'user' => $this->guard()->user(),
+            'accessToken' => $token
+        ], 200);
     }
 
     public function register( Request $request ) {
@@ -76,13 +86,13 @@ class AuthController extends Controller {
         return $this->respondWithToken($this->guard()->refresh());
     }
 
-    protected function respondWithToken( $token ) {
+    /* protected function respondWithToken( $token ) {
         return response()->json([
             'token' => $token,
             'token_type' => 'bearer',
             'token_validity' => $this->guard()->factory()->getTTL() * 60,
         ]);
-    }
+    } */
 
     protected function guard() {
         return Auth::guard();
