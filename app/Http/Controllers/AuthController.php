@@ -49,11 +49,13 @@ class AuthController extends Controller {
     public function register( Request $request ) {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
+            'last_name' => 'required|string|between:2,100',
             'email' => 'required|email|unique:users',
-            'password' => 'required|confirmed|min:4'
+            'password' => 'required|min:6',
+            'terms_agree' => 'required'
         ]);
 
-        if ( !$validator->fails() ) {
+        if ( $validator->fails() ) {
             return response()->json([
                 $validator->errors()
             ], 422);
@@ -70,7 +72,7 @@ class AuthController extends Controller {
         ]);
     }
 
-    public function whoami( Request $request ) {
+    public function whoami() {
         return response()->json([
             'user' => $this->guard()->user()
         ], 200);
