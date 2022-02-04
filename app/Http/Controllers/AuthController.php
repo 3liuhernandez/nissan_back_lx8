@@ -6,10 +6,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller {
     public function __construct() {
-
         $this->middleware(
             'auth:api', ['except' => ['login', 'register']]
         );
@@ -104,5 +104,46 @@ class AuthController extends Controller {
 
     protected function guard() {
         return Auth::guard();
+    }
+
+    public function edit(Request $request) {
+        $user = $this->guard()->user();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'last_name' => 'required',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users')->ignore($user->id,'id'),
+            ],
+            'password' => 'nullable|min:6|confirmed',
+
+        ], [
+            'required' => 'Este campo es necesario.',
+            'email' => 'El correo es inválido.',
+            'unique' => 'Este correo eletrónico ya está en uso.',
+            'confirmed' => 'Las contraseñas no coinciden.',
+
+        ]);
+
+        if ( $validator->fails() ) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $data = $validator->validated();
+
+        $user->name = $data['name'];
+        $user->last_name = $data['last_name'];
+        $user->email = $data['email'];
+
+        if(null != $data['password']) {
+            $user->password = bcrypt($data['password']);
+        }
+
+        $user->save();
+        return response()->json([
+            'success' => true
+        ]);
     }
 }
