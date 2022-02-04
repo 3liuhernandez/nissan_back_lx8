@@ -70,6 +70,12 @@ class AuthController extends Controller {
         ]);
     }
 
+    public function whoami( Request $request ) {
+        return response()->json([
+            'user' => $this->guard()->user()
+        ], 200);
+    }
+
     public function profile() {
         return response()->json( $this->guard()->user() );
     }

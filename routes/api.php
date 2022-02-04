@@ -21,6 +21,7 @@ Route::group(
     ],
     function($router) {
         Route::post('login', 'AuthController@login')->name('login');
+        Route::get('whoami', 'AuthController@whoami');
         Route::post('register', 'AuthController@register');
         Route::post('logout', 'AuthController@logout');
         Route::get('profile', 'AuthController@profile');
