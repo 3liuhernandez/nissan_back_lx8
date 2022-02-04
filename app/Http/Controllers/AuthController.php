@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\{User, PersonalInformation};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -66,9 +66,15 @@ class AuthController extends Controller {
             ['password' => bcrypt($request->password)]
         ));
 
+        PersonalInformation::create([
+            'user_id' => $user->id
+        ]);
+
+
         return response()->json([
-            'message' => 'User created successfully',
-            'urser' => $user
+            'success' => true,
+            'message' => 'Registro exitoso',
+            'user' => $user
         ]);
     }
 
@@ -110,40 +116,70 @@ class AuthController extends Controller {
         $user = $this->guard()->user();
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'last_name' => 'required',
-            'email' => [
+            'document' => [
                 'required',
-                'email',
-                Rule::unique('users')->ignore($user->id,'id'),
+                Rule::unique('personal_information')->ignore($user->id,'user_id'),
             ],
-            'password' => 'nullable|min:6|confirmed',
+            'birthdate' => 'required|date_format:Y-m-d',
+            'tel' => 'required',
+            'adress' => 'required',
+            'adress' => 'required',
+            'food' => 'required|in:0,1,celiaquia,vegetarianismo,veganismo',
+            'size' => 'required|in:xs,s,m,xl,xxl',
+            'transport' => 'required|in:aereo,bus,no-aplica',
 
-        ], [
-            'required' => 'Este campo es necesario.',
-            'email' => 'El correo es inválido.',
-            'unique' => 'Este correo eletrónico ya está en uso.',
-            'confirmed' => 'Las contraseñas no coinciden.',
 
+            'aerial_aeroline' => 'required_if:transport,aereo',
+            'aerial_arrive_time' => 'required_if:transport,aereo',
+            'aerial_booking' => 'required_if:transport,aereo',
+            'aerial_departure_time' => 'required_if:transport,aereo',
+            'aerial_destination' => 'required_if:transport,aereo',
+            'aerial_flight' => 'required_if:transport,aereo',
+
+            'bus_arrive_time' => 'required_if:transport,bus',
+            'bus_booking' => 'required_if:transport,bus',
+            'bus_departure_time' => 'required_if:transport,bus',
+
+            'parking_car_model' => 'required_if:transport,no-aplica',
+            'parking_patent' => 'required_if:transport,no-aplica'
         ]);
 
         if ( $validator->fails() ) {
             return response()->json($validator->errors(), 400);
         }
 
+
         $data = $validator->validated();
+        $user->personal->document = $data['document'];
+        $user->personal->birthdate = $data['birthdate'];
+        $user->personal->tel = $data['tel'];
+        $user->personal->adress = $data['adress'];
+        $user->personal->adress = $data['adress'];
+        $user->personal->food = $data['food'];
+        $user->personal->size = $data['size'];
+        $user->personal->transport = $data['transport'];
 
-        $user->name = $data['name'];
-        $user->last_name = $data['last_name'];
-        $user->email = $data['email'];
+        $user->personal->aerial_aeroline = $data['aerial_aeroline'];
+        $user->personal->aerial_arrive_time = $data['aerial_arrive_time'];
+        $user->personal->aerial_booking = $data['aerial_booking'];
+        $user->personal->aerial_departure_time = $data['aerial_departure_time'];
+        $user->personal->aerial_destination = $data['aerial_destination'];
+        $user->personal->aerial_flight = $data['aerial_flight'];
 
-        if(null != $data['password']) {
-            $user->password = bcrypt($data['password']);
-        }
+        $user->personal->bus_arrive_time = $data['bus_arrive_time'];
+        $user->personal->bus_booking = $data['bus_booking'];
+        $user->personal->bus_departure_time = $data['bus_departure_time'];
 
-        $user->save();
+        $user->personal->parking_car_model = $data['parking_car_model'];
+        $user->personal->parking_patent = $data['parking_patent'];
+
+        $user->personal->save();
+
+
+
         return response()->json([
-            'success' => true
+            'success' => true,
+            'message' => 'Guardado exitosamente.'
         ]);
     }
 }
