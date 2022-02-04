@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class AuthController extends Controller {
-    public function __construct() {
-        $this->middleware(
-            'auth:api', ['except' => ['login', 'register']]
-        );
-    }
 
     /**
      * Logear usuario

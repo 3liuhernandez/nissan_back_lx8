@@ -13,16 +13,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::post('auth/register', 'AuthController@register');
+Route::post('auth/login', 'AuthController@login')->name('login');
+
 Route::group(
     [
-        'middleware' => 'api',
+        'middleware' => 'auth:api',
         'namespace' => 'App\Http\Controllers',
         'prefix' => 'auth'
     ],
     function($router) {
-        Route::post('login', 'AuthController@login')->name('login');
         Route::get('whoami', 'AuthController@whoami');
-        Route::post('register', 'AuthController@register');
         Route::post('logout', 'AuthController@logout');
         Route::get('profile', 'AuthController@profile');
         Route::post('refresh', 'AuthController@refresh');
