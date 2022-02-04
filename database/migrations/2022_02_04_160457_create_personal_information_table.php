@@ -39,6 +39,8 @@ class CreatePersonalInformationTable extends Migration
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
+            $table->tinyInteger('registered')->default(0);
+
             $table->timestamps();
         });
     }

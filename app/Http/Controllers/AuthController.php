@@ -42,6 +42,7 @@ class AuthController extends Controller {
 
         return response()->json([
             'user' => $this->guard()->user(),
+            'personal_information' => $this->guard()->user()->personal,
             'accessToken' => $token
         ], 200);
     }
@@ -57,8 +58,9 @@ class AuthController extends Controller {
 
         if ( $validator->fails() ) {
             return response()->json([
-                $validator->errors()
-            ], 422);
+                'message' => $validator->errors(),
+                'success' => false,
+            ], 500);
         }
 
         $user = User::create(array_merge(
@@ -80,7 +82,8 @@ class AuthController extends Controller {
 
     public function whoami() {
         return response()->json([
-            'user' => $this->guard()->user()
+            'user' => $this->guard()->user(),
+            'personal_information' => $this->guard()->user()->personal,
         ], 200);
     }
 
