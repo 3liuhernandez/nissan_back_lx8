@@ -33,7 +33,8 @@ class PersonalInformation extends Model
         'parking_patent',
         'size',
         'tel',
-        'transport'
+        'transport',
+        'registered',
     ];
 
     /**

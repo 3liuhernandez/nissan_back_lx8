@@ -13,12 +13,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('auth/register', 'AuthController@register');
-Route::post('auth/login', 'AuthController@login')->name('login');
+
 
 Route::group(
     [
-        'middleware' => 'auth:api',
+        'middleware' => 'api',
         'namespace' => 'App\Http\Controllers',
         'prefix' => 'auth'
     ],
@@ -28,8 +27,11 @@ Route::group(
         Route::get('profile', 'AuthController@profile');
         Route::post('refresh', 'AuthController@refresh');
         Route::post('edit', 'AuthController@edit');
+        Route::post('register', 'AuthController@register');
+        Route::post('login', 'AuthController@login')->name('login');
     }
 );
+
 
 
 /* Route::group([
