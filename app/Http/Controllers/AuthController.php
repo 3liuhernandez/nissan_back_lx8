@@ -55,7 +55,7 @@ class AuthController extends Controller {
             return response()->json([
                 'message' => $validator->errors(),
                 'success' => false,
-            ], 500);
+            ], 422);
         }
 
         $user = User::create(array_merge(
