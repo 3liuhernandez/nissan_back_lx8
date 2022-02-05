@@ -60,7 +60,7 @@ class AuthController extends Controller {
 
         $user = User::create(array_merge(
             $validator->validated(),
-            ['password' => bcrypt($request->password)]
+            ['password' => bcrypt($request->password)],
         ));
 
         PersonalInformation::create([
@@ -71,7 +71,8 @@ class AuthController extends Controller {
         return response()->json([
             'success' => true,
             'message' => 'Registro exitoso',
-            'user' => $user
+            'user' => $user,
+            'personal_information' => $user->personal,
         ]);
     }
 
@@ -98,14 +99,6 @@ class AuthController extends Controller {
         return $this->respondWithToken($this->guard()->refresh());
     }
 
-    /* protected function respondWithToken( $token ) {
-        return response()->json([
-            'token' => $token,
-            'token_type' => 'bearer',
-            'token_validity' => $this->guard()->factory()->getTTL() * 60,
-        ]);
-    } */
-
     protected function guard() {
         return Auth::guard();
     }
@@ -119,7 +112,7 @@ class AuthController extends Controller {
                 Rule::unique('personal_information')->ignore($user->id,'user_id'),
             ],
             'birthdate' => 'required|date_format:Y-m-d',
-            'tel' => 'required',
+            'phone' => 'required',
             'adress' => 'required',
             'adress' => 'required',
             'food' => 'required|in:0,1,celiaquia,vegetarianismo,veganismo',
@@ -139,13 +132,12 @@ class AuthController extends Controller {
             'bus_departure_time' => 'required_if:transport,bus',
 
             'parking_car_model' => 'required_if:transport,no-aplica',
-            'parking_patent' => 'required_if:transport,no-aplica'
+            'parking_patent' => 'required_if:transport,no-aplica',
         ]);
 
         if ( $validator->fails() ) {
             return response()->json($validator->errors(), 400);
         }
-
 
         $data = $validator->validated();
         $user->personal->document = $data['document'];
@@ -170,6 +162,8 @@ class AuthController extends Controller {
 
         $user->personal->parking_car_model = $data['parking_car_model'];
         $user->personal->parking_patent = $data['parking_patent'];
+
+        $user->personal->registered = 1;
 
         $user->personal->save();
 
